@@ -38,8 +38,6 @@ def getStockInfoBySymbolList(symbol_list):
     symbol_list_str = separator.join(symbol_list)
     dcf_res = getDCF(symbol_list_str)
     quote_res = getQuote(symbol_list_str)
-    print(dcf_res)
-    print(quote_res)
 
     stock_info_list = []
     for i in range(len(symbol_list)):

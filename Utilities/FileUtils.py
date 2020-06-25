@@ -23,7 +23,7 @@ FILE_PREFIX_SYMBOL = "symbols"
 
 
 def writeDictListIntoCSV(file_path, fields, dict_list):
-    with open(file_path, 'w', newline='') as csv_file:
+    with open(file_path, 'w', newline='', encoding='utf-8') as csv_file:
         writer = csv.DictWriter(csv_file, fields, restval='', extrasaction='ignore')
         writer.writeheader()
         for item in dict_list:
@@ -31,7 +31,7 @@ def writeDictListIntoCSV(file_path, fields, dict_list):
 
 def readDictListFromCSV(file_path, fields, covert_type=True):
     result_list = []
-    with open(file_path, newline='') as csv_file:
+    with open(file_path, newline='', encoding='utf-8') as csv_file:
         reader = csv.DictReader(csv_file, fieldnames=fields)
 
         i = 0
