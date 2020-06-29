@@ -40,23 +40,21 @@ def getStockInfoBySymbolList(symbol_list):
     quote_res = getQuote(symbol_list_str)
 
     stock_info_list = []
-    for i in range(len(symbol_list)):
+    if quote_res:
         try:
-            stock_info = {}
-            if quote_res:
+            for i in range(len(symbol_list)):
                 stock_info = quote_res[i]
+                stock_info['dcf'] = 0.0
                 if dcf_res:
-                    stock_info['dcf'] = dcf_res[i]['dcf']
-            else:
-                if dcf_res:
-                    stock_info['symbol'] = dcf_res[i]['symbol']
-                    stock_info['price'] = dcf_res[i]['Stock Price']
-                    stock_info['dcf'] = dcf_res[i]['dcf']
+                    for dcf in dcf_res:
+                        if dcf['symbol'] == stock_info['symbol']:
+                            stock_info['dcf'] = dcf['dcf']
+                            break
 
-            stock_info_list.append(stock_info)
+                stock_info_list.append(stock_info)
         except IndexError:
             print(f'Error: get information for symbol list {symbol_list} failed. '
-                  f'Please check if every symbols in the list {symbol_list} is a normal US stock and not futures')
+                f'Please check if every symbols in the list {symbol_list} is a normal US stock and not futures')
 
     return stock_info_list
 
