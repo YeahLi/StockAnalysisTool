@@ -1,9 +1,13 @@
-form.search {
+#search_bar {
+    margin-bottom: 50px;
+}
+
+#search_bar {
   display: flex;
   flex-direction: row;
 }
 
-form.search input[type=text] {
+#search_bar input[type=text] {
   padding: 10px;
   font-size: 17px;
   border: 1px solid grey;
@@ -11,7 +15,7 @@ form.search input[type=text] {
   background: #f1f1f1;
 }
 
-form.search button {
+#search_bar button {
   width: 20%;
   max-width: 80px;
   padding: 10px;
@@ -23,16 +27,6 @@ form.search button {
   cursor: pointer;
 }
 
-form.search button:hover {
+#search_bar button:hover {
   background: #0b7dda;
-}
-
-form.search::after {
-  content: "";
-  clear: both;
-  display: table;
-}
-
-#search_bar {
-    margin-bottom: 50px;
 }

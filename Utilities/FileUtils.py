@@ -12,11 +12,13 @@ STOCK_INFO_FILEDS = ['symbol', 'name', 'price', 'changesPercentage', 'change', '
 
 SYMBOL_LIST_FILEDS = ['symbol', 'name', 'price', 'exchange']
 
+SYMBOLS_FILED = ['symbol']
+
 # Python relative path is relative to current working directory os.getcwd()
 CACHE_FILE_DIR = "./cache/"
 SYMBOL_LIST_DIR = "./symbols/"
 
-EXPIRE_INTERVAL = 300  # seconds
+EXPIRE_INTERVAL = 120  # seconds
 
 FILE_PREFIX_STOCK = "stocks"
 FILE_PREFIX_SYMBOL = "symbols"
@@ -62,7 +64,7 @@ def generateFileName(prefix):
     return file_path
 
 # If cache file exists and is not expired, return file path. Otherwise, return None
-def checkCacheFile(prefix, expire_interval = EXPIRE_INTERVAL):
+def checkCacheFile(prefix, expire_interval=EXPIRE_INTERVAL):
     file_list = glob.glob(CACHE_FILE_DIR + prefix + "_*") # Only find out all related cache files
     if not file_list:
         return None
@@ -76,6 +78,6 @@ def checkCacheFile(prefix, expire_interval = EXPIRE_INTERVAL):
         if interval <= expire_interval:
             return file_path
         else:
-            pathlib.Path(file_path).unlink() # if cache file is expired, will remove it.
+            pathlib.Path(file_path).unlink()  # if cache file is expired, will remove it.
 
     return None

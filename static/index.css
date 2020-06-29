@@ -1,0 +1,26 @@
+#topheader .navbar-default {
+    background-color: #5f5f5f;
+    border-color: #e7e7e7;
+    font-size: 17px;
+    letter-spacing: 1px;
+    font-family: "Segoe UI",Arial,sans-serif;
+}
+
+#topheader .navbar-nav li > a {
+    transition: background-color .2s; color .2s;
+    color: #ffffff;
+}
+
+#topheader .navbar-nav li > a:hover {
+    text-transform: capitalize;
+    color: #f1f1f1 !important;
+    background-color: #000000 !important;
+}
+
+#topheader .navbar-nav li.active > a {
+    background-color: #4CAF50;
+}
+
+#topheader .navbar-brand {
+    color: #ffffff;
+}

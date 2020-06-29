@@ -2,6 +2,7 @@ import itertools
 import os
 import json
 
+
 from flask import Flask, make_response, jsonify
 from flask import render_template
 from Utilities import StockUtils
@@ -14,31 +15,60 @@ STOCK_DISPLAY_FIELDS_DICT = {"symbol": "Symbol", "name": "Company Name", "price"
                              "changesPercentage": "Percentage", "change": "Change", 'pe': "PE",
                              'dcf': "Discounted Cash Flow"}
 
-HENRY_SYMBOLS = ["AMZN", "FB", "TWTR", "AAPL", "NFLX", "GOOG", "SHOP", "BABA", "MSFT", "NVDA", "AMD", "INTC",
+MY_SYMBOLS = ["AMZN", "FB", "TWTR", "AAPL", "NFLX", "GOOG", "SHOP", "BABA", "MSFT", "NVDA", "AMD", "INTC",
                  "GOOS", "TSLA", "WORK", "PYPL", "CRM", "UBER", "DIS", "RY", "COST", "JPM", "ZM", "DOCU"]
 
 BLACK_ROCK_SYMBOLS = ["MSFT", "AAPL", "BABA", "GOOG", "AMZN", "CRM", "PYPL", "ADBE", "TWLO"]
 
 # print a nice greeting.
+@application.route('/')
+@application.route('/index')
+def main_page():
+    return render_template('index.html')
+
 @application.route('/hello')
 def say_hello():
     return "Hello Money ~"
 
-@application.route('/')
-@application.route('/index')
-def main_page():
-    #return "Welcome!"
-    return render_template('stock_info.html', dataURL="/stock_info/henry")
+@application.route('/my_stock')
+def my_stock():
+    return render_template('stock_info.html', list_name="my_stock")
+
+@application.route('/black_rock')
+def black_rock():
+    return render_template('stock_info.html', list_name="black_rock")
+
+# Input: a list of String
+def saveSymbolList(symbol_list, list_name):
+    symbol_dict_list = []
+    for symbol in symbol_list:
+        symbol_dict = {'symbol': symbol}
+        symbol_dict_list.append(symbol_dict)
+
+    file_path = "./symbols/" + list_name
+    FileUtils.writeDictListIntoCSV(file_path, FileUtils.SYMBOLS_FILED, symbol_dict_list)
+
+# Return a list of String
+def readSymbolList(list_name):
+    symbol_list = []
+    file_path = "./symbols/" + list_name
+    symbol_dict_list = FileUtils.readDictListFromCSV(file_path, FileUtils.SYMBOLS_FILED, False)
+    for symbol_dict in symbol_dict_list:
+        symbol_list.append(symbol_dict['symbol'])
+    return symbol_list
+
+# For internal use
+@application.route('/init_symbol_lists', methods=['GET'])
+def init_symbol_lists():
+    saveSymbolList(MY_SYMBOLS, "my_stock")
+    saveSymbolList(BLACK_ROCK_SYMBOLS, "black_rock")
+    return "ok"
 
 @application.route('/stock_info/<list_name>', methods=['GET'])
 def stock_info(list_name):
     print(f"Start getting stock info for {list_name} ...")
-    symbol_list = []
     # 1. Get symbol list by list_name
-    if list_name == "henry":
-        symbol_list = HENRY_SYMBOLS
-    elif list_name == "black_rock":
-        symbol_list = BLACK_ROCK_SYMBOLS
+    symbol_list = readSymbolList(list_name)
 
     # 2. Check if cache is available
     file_prefix = FileUtils.FILE_PREFIX_STOCK + "_" + list_name
@@ -64,6 +94,7 @@ def stock_info(list_name):
     result = {"data": refine_stock_list(stock_info_list)}
     return json.dumps(result, indent=4)  # return a string
 
+# Return a list of dictionary.
 def refine_stock_list(stock_info_list):
     result_list = []
     for item in stock_info_list:
@@ -72,7 +103,10 @@ def refine_stock_list(stock_info_list):
             value = item[key]
             if isinstance(item[key], float):
                 value = round(item[key], 2)
-            result_item[key] = value
+            if key == "changesPercentage":
+                result_item[key] = "%.2f%%" % value
+            else:
+                result_item[key] = value
         result_list.append(result_item)
 
     return result_list
@@ -137,6 +171,33 @@ def getHints(search_word):
     # 5. Return result
     return json.dumps({"hints": hints}, indent=4)
 
+@application.route('/symbol_lists/<list_name>/<symbol>', methods=['POST'])
+def add_symbol_to_list(list_name, symbol):
+    if not StockUtils.isValidSymbol(symbol):
+        error_msg = "Symbol %s is invalid." % symbol
+        return make_response(jsonify({'error': error_msg}), 401)
+
+    symbol_list = readSymbolList(list_name)
+    if symbol in symbol_list:
+        error_msg = "Symbol %s is already in the list %s." % (symbol, list_name)
+        return make_response(jsonify({'error': error_msg}), 401)
+
+    symbol_list.append(symbol)
+    saveSymbolList(symbol_list, list_name)
+    # Remove previous cache
+    file_prefix = FileUtils.FILE_PREFIX_STOCK + "_" + list_name
+    FileUtils.checkCacheFile(file_prefix, 0)  # expire interval equals 0 means just removing cache file
+    return make_response("", 200)
+
+@application.route('/symbol_lists/<list_name>/<symbol>', methods=['DELETE'])
+def remove_symbol_from_list(list_name, symbol):
+    symbol_list = readSymbolList(list_name)
+    symbol_list.remove(symbol)
+    saveSymbolList(symbol_list, list_name)
+    # Remove previous cache
+    file_prefix = FileUtils.FILE_PREFIX_STOCK + "_" + list_name
+    FileUtils.checkCacheFile(file_prefix, 0)  # expire interval equals 0 means just removing cache file
+    return make_response("", 200)
 
 # run the app.
 if __name__ == "__main__":

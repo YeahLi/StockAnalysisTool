@@ -5,7 +5,7 @@ from requests.exceptions import Timeout
 import json
 from pprint import pprint
 
-def sendGetRequest(url, payload=None, timeout=5):
+def sendGetRequest(url, payload=None, timeout=8):
     response = None
     try:
         if payload is not None:
